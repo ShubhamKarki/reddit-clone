@@ -6,6 +6,14 @@ import cookie from 'cookie';
 
 import User from './../entity/User';
 import auth from '../middleware/auth';
+
+const mappedError = (errors: Object[]) => {
+	return errors.reduce((prev: any, err: any) => {
+		prev[err.property] = Object.entries(err.constraints)[0][1];
+		return prev;
+	}, {});
+};
+
 const register = async (req: Request, res: Response) => {
 	const { email, username, password } = req.body;
 	try {
@@ -19,8 +27,9 @@ const register = async (req: Request, res: Response) => {
 		//  Create the user
 		const user = new User({ email, username, password });
 		errors = await validate(user);
-		if (errors.length > 0) return res.status(400).json({ errors });
-
+		if (Object.keys(errors).length > 0) {
+			return res.status(400).json(mappedError(errors));
+		}
 		await user.save();
 		//  Return the user
 		return res.json(user);
@@ -41,7 +50,7 @@ const login = async (req: Request, res: Response) => {
 			return res.status(400).json({ errors });
 		}
 		const user = await User.findOne({ username });
-		if (!user) return res.status(404).json({ error: 'User not found' });
+		if (!user) return res.status(404).json({ username: 'User not found' });
 		const passwordMatchs = await bcrypt.compare(password, user.password);
 		if (!passwordMatchs) {
 			return res.status(401).json({
