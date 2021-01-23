@@ -1,38 +1,47 @@
-import { IsEmail, Length } from 'class-validator';
 import {
-	Entity,
-	PrimaryGeneratedColumn,
+	Entity as TOEntity,
 	Column,
-	BaseEntity,
 	Index,
-	CreateDateColumn,
-	UpdateDateColumn,
 	BeforeInsert,
+	ManyToOne,
+	JoinColumn,
 } from 'typeorm';
-import bcrypt from 'bcrypt';
-import { classToPlain, Exclude } from 'class-transformer';
+import { makeId, slugify } from '../utils/helper';
 
-@Entity()
-export class User extends BaseEntity {
-	constructor(user: Partial<User>) {
+import Entity from './Entity';
+import User from './User';
+
+@TOEntity('posts')
+export default class Post extends Entity {
+	constructor(post: Partial<Post>) {
 		super();
-		Object.assign(this, user);
+		Object.assign(this, post);
 	}
-	@Exclude()
-	@PrimaryGeneratedColumn()
-	id: number;
 
-	@CreateDateColumn()
-	createdAt: Date;
+	@Index()
+	@Column()
+	identifier: string; //7 character id
 
-	@UpdateDateColumn()
-	updatedAt: Date;
+	@Column()
+	title: string;
+
+	@Index()
+	@Column()
+	slug: string;
+
+	@Column({ nullable: true, type: 'text' })
+	body: string;
+
+	@Column()
+	subName: string;
+
+	@ManyToOne(() => User, (user) => user.posts)
+	@JoinColumn({ name: 'username', referencedColumnName: 'username' })
+	user: User;
 
 	@BeforeInsert()
-	async hashPassword() {
-		// this.password = await bcrypt.hash(this.password, 6);
-	}
-	toJSON() {
-		return classToPlain(this);
+	makeIdAndSlug() {
+		this.identifier = makeId(7);
+		this.slug = slugify(this.title);
 	}
 }
