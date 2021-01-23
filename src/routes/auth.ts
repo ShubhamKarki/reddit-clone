@@ -32,7 +32,6 @@ const register = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
 	const { username, password } = req.body;
-
 	try {
 		let errors: any = {};
 		if (isEmpty(username)) errors.username = 'username must not be empty';
@@ -49,7 +48,7 @@ const login = async (req: Request, res: Response) => {
 				password: 'Password is incorrect',
 			});
 		}
-		const token = jwt.sign({ username }, process.env.JWT_SECRET);
+		const token = jwt.sign({ username }, process.env.JWT_SECRET!);
 		res.set(
 			'Set-Cookie',
 			cookie.serialize('token', token, {
@@ -62,7 +61,9 @@ const login = async (req: Request, res: Response) => {
 		);
 
 		return res.json(user);
-	} catch (error) {}
+	} catch (error) {
+		return res.status(500).json({ error });
+	}
 };
 
 const me = (_: Request, res: Response) => {
