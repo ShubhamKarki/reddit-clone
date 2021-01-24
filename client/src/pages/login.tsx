@@ -35,7 +35,7 @@ export default function Home() {
 			</Head>
 
 			<div
-				className='h-screen bg-center bg-cover w-36'
+				className='h-screen bg-white bg-center bg-cover w-36'
 				style={{ background: "url('/images/berries.jpg')" }}></div>
 
 			<div className='flex flex-col justify-center pl-6'>
